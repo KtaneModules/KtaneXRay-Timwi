@@ -15,7 +15,7 @@
    version="1.1"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="Icons.svg"
-   inkscape:export-filename="D:\c\KTANE\X-Ray\Icons.png"
+   inkscape:export-filename="D:\c\KTANE\XRay\Data\Icons.png"
    inkscape:export-xdpi="162"
    inkscape:export-ydpi="162">
   <defs
@@ -25,11 +25,11 @@
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0.0"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.1258333"
-     inkscape:cx="600"
-     inkscape:cy="150"
+     inkscape:cx="702.74317"
+     inkscape:cy="201.69001"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -223,7 +223,7 @@
        sodipodi:cy="250"
        sodipodi:rx="40"
        sodipodi:ry="40"
-       d="M 290,250 A 40,40 0 1 1 210,250 40,40 0 1 1 290,250 z"
+       d="M 290,250 C 290,272.09139 272.09139,290 250,290 227.90861,290 210,272.09139 210,250 210,227.90861 227.90861,210 250,210 272.09139,210 290,227.90861 290,250 z"
        transform="translate(0,752.36218)" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
