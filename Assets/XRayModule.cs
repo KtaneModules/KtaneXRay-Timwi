@@ -44,9 +44,10 @@ public class XRayModule : MonoBehaviour
         var row = Rnd.Range(0, 12);
         // This makes sure that we don’t go off the edge of the table
         var dir = Enumerable.Range(0, 9).Where(dr => !(col == 0 && dr % 3 == 0) && !(col == 11 && dr % 3 == 2) && !(row == 0 && dr / 3 == 0) && !(row == 11 && dr / 3 == 2)).PickRandom();
-        var solution = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
-        var buttonLabelIxs = Enumerable.Range(0, 33).Where(i => i != solution).ToList().Shuffle().Take(Buttons.Length - 1).Concat(new[] { solution }).ToList().Shuffle();
-        var solutionIx = buttonLabelIxs.IndexOf(solution);
+        var solutionIcon = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
+        var decoyIcon = _table[(row + dir / 3 - 1) * 12 + (col ^ 1) + (dir % 3 - 1)];
+        var buttonLabelIxs = Enumerable.Range(0, 33).Where(i => i != solutionIcon && i != decoyIcon).ToList().Shuffle().Take(Buttons.Length - 2).Concat(new[] { solutionIcon, decoyIcon }).ToList().Shuffle();
+        var solutionIx = buttonLabelIxs.IndexOf(solutionIcon);
         for (int i = 0; i < Buttons.Length; i++)
         {
             ButtonLabelObjs[i].material.mainTexture = ButtonLabels[buttonLabelIxs[i]];
@@ -54,7 +55,7 @@ public class XRayModule : MonoBehaviour
         }
 
         Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: symbol there is {3}.", _moduleId, col + 1, row + 1, _table[row * 12 + col]);
-        Debug.LogFormat("[X-Ray #{0}] {1}. Solution symbol is {2}.", _moduleId, "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], solution);
+        Debug.LogFormat("[X-Ray #{0}] {1}. Solution symbol is {2}.", _moduleId, "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], solutionIcon);
         Debug.LogFormat("[X-Ray #{0}] Correct symbol is on button #{1}.", _moduleId, solutionIx + 1);
 
         if (_coroutine != null)

@@ -27,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.1258333"
-     inkscape:cx="702.74317"
-     inkscape:cy="201.69001"
+     inkscape:zoom="0.98510414"
+     inkscape:cx="666.56638"
+     inkscape:cy="126.25119"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -56,7 +56,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -86,16 +86,14 @@
        sodipodi:nodetypes="cccccccc" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="M 510,70 550,30 530,10 590,10 590,70 570,50 530,90 z"
+       d="M 610,822.36218 650,782.36218 630,762.36218 690,762.36218 690,822.36218 670,802.36218 630,842.36218 z"
        id="path3777"
-       inkscape:connector-curvature="0"
-       transform="translate(0,752.36218)" />
+       inkscape:connector-curvature="0" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="M 670,90 610,90 610,30 630,50 670,10 690,30 650,70 z"
+       d="M 570,842.36218 510,842.36218 510,782.36218 530,802.36218 570,762.36218 590,782.36218 550,822.36218 z"
        id="path3779"
-       inkscape:connector-curvature="0"
-       transform="translate(0,752.36218)" />
+       inkscape:connector-curvature="0" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="M 790,90 730,90 750,70 710,30 730,10 770,50 790,30 z"

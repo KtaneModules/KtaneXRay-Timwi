@@ -10,10 +10,10 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5cf2299c8864afe4ab42466f546ae20d, type: 3}
   m_Name: WorkshopItem
-  m_EditorClassIdentifier:
-  WorkshopPublishedFileID: 0
+  m_EditorClassIdentifier: 
+  WorkshopPublishedFileID: 985466399
   Title: X-Ray
-  Description: '<description>
+  Description: 'I can see right through you.
 
 
     Module created by Timwi.
