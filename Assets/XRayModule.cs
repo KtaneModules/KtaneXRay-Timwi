@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using XRay;
@@ -16,6 +17,9 @@ public class XRayModule : MonoBehaviour
     public KMAudio Audio;
 
     public GameObject[] ScanLights;
+    public Texture[] ButtonLabels;
+    public MeshRenderer[] ButtonLabelObjs;
+    public KMSelectable[] Buttons;
 
     private const int _iconWidth = 180;
     private const int _iconHeight = 180;
@@ -24,22 +28,66 @@ public class XRayModule : MonoBehaviour
 
     private static int _moduleIdCounter = 1;
     private int _moduleId;
+    private bool _isSolved;
+    private Coroutine _coroutine;
 
     void Start()
     {
         _moduleId = _moduleIdCounter++;
+        _isSolved = false;
+        Initialize();
+    }
 
+    private void Initialize()
+    {
         var col = Rnd.Range(0, 12);
         var row = Rnd.Range(0, 12);
         // This makes sure that we don’t go off the edge of the table
         var dir = Enumerable.Range(0, 9).Where(dr => !(col == 0 && dr % 3 == 0) && !(col == 11 && dr % 3 == 2) && !(row == 0 && dr / 3 == 0) && !(row == 11 && dr / 3 == 2)).PickRandom();
         var solution = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
-        var buttons = Enumerable.Range(0, 33).Where(i => i != solution).ToList().Shuffle().Take(4).Concat(new[] { solution }).ToList().Shuffle();
+        var buttonLabelIxs = Enumerable.Range(0, 33).Where(i => i != solution).ToList().Shuffle().Take(Buttons.Length - 1).Concat(new[] { solution }).ToList().Shuffle();
+        var solutionIx = buttonLabelIxs.IndexOf(solution);
+        for (int i = 0; i < Buttons.Length; i++)
+        {
+            ButtonLabelObjs[i].material.mainTexture = ButtonLabels[buttonLabelIxs[i]];
+            setButtonHandler(i, solutionIx);
+        }
 
-        Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: symbol there is {3}", _moduleId, col + 1, row + 1, _table[row * 12 + col]);
-        Debug.LogFormat("[X-Ray #{0}] {1}: symbol is now {2}", _moduleId, "move up-left,move up,move up-right,move left,stay put,move right,move down-left,move down,move down-right".Split(',')[dir], solution);
+        Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: symbol there is {3}.", _moduleId, col + 1, row + 1, _table[row * 12 + col]);
+        Debug.LogFormat("[X-Ray #{0}] {1}. Solution symbol is {2}.", _moduleId, "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], solution);
+        Debug.LogFormat("[X-Ray #{0}] Correct symbol is on button #{1}.", _moduleId, solutionIx + 1);
 
-        StartCoroutine(RunLights(col, row, dir));
+        if (_coroutine != null)
+            StopCoroutine(_coroutine);
+        _coroutine = StartCoroutine(RunLights(col, row, dir));
+    }
+
+    private void setButtonHandler(int i, int solution)
+    {
+        Buttons[i].OnInteract = delegate
+        {
+            Buttons[i].AddInteractionPunch();
+            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, Buttons[i].transform);
+
+            if (_isSolved)
+                return false;
+            if (i != solution)
+            {
+                Debug.LogFormat("[X-Ray #{0}] You pressed button #{1}, which is wrong. Resetting module.", _moduleId, i + 1);
+                Module.HandleStrike();
+                Initialize();
+            }
+            else
+            {
+                Debug.LogFormat("[X-Ray #{0}] You pressed button #{1}. Module solved.", _moduleId, i + 1);
+                Module.HandlePass();
+                _isSolved = true;
+                StopCoroutine(_coroutine);
+                foreach (var scanLight in ScanLights)
+                    scanLight.SetActive(false);
+            }
+            return false;
+        };
     }
 
     private IEnumerator RunLights(int col, int row, int dir)
