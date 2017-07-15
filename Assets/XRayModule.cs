@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using XRay;
@@ -25,6 +26,12 @@ public class XRayModule : MonoBehaviour
     private const int _iconHeight = 180;
 
     private static int[] _table = { 30, 28, 26, 1, 25, 11, 8, 29, 9, 12, 3, 11, 15, 13, 28, 19, 14, 31, 0, 15, 13, 31, 18, 9, 8, 11, 2, 9, 23, 22, 17, 14, 0, 23, 32, 20, 30, 27, 25, 4, 26, 16, 9, 24, 23, 6, 4, 28, 12, 15, 21, 10, 21, 22, 29, 17, 26, 27, 22, 32, 0, 7, 15, 17, 14, 23, 2, 11, 27, 27, 23, 18, 13, 25, 9, 11, 19, 19, 4, 14, 16, 32, 5, 12, 3, 10, 0, 5, 32, 25, 30, 28, 3, 19, 6, 22, 18, 10, 24, 20, 6, 13, 16, 16, 7, 5, 30, 18, 29, 31, 1, 31, 21, 3, 1, 17, 20, 20, 5, 32, 17, 2, 1, 29, 7, 15, 16, 19, 24, 4, 7, 22, 26, 5, 4, 27, 6, 12, 14, 6, 10, 31, 18, 21 };
+
+    public string TwitchHelpMessage = "Press a button with !{0} press 3 or !{0} press bl. Buttons are TL, T, BL, B, BR.";
+    private static Dictionary<string, int> _twitchButtonMap = new Dictionary<string, int>
+    {
+        {"tl", 1}, {"t", 2}, {"tm", 2 }, {"tr", 2}, {"bl", 3}, {"b", 4}, {"bm", 4}, {"br", 5}
+    };
 
     private static int _moduleIdCounter = 1;
     private int _moduleId;
@@ -157,5 +164,25 @@ public class XRayModule : MonoBehaviour
                     curDirectionNeg = true;
             }
         }
+    }
+
+    public KMSelectable[] ProcessTwitchCommand(string command)
+    {
+        if ( (!command.StartsWith("press ", StringComparison.InvariantCultureIgnoreCase)) ||
+            (command.Length < 7) )
+        {
+            return null;
+        }
+        string buttonInput = command.Substring(6).ToLowerInvariant();
+
+        int buttonId;
+        if ( (int.TryParse(buttonInput, out buttonId)) || (_twitchButtonMap.TryGetValue(buttonInput, out buttonId)) )
+        {
+            if ( (buttonId > 0) && (buttonId <= Buttons.Length) )
+            {
+                return new[] { Buttons[ buttonId - 1 ] };
+            }
+        }
+        return null;
     }
 }
