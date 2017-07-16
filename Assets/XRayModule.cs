@@ -104,7 +104,6 @@ public class XRayModule : MonoBehaviour
 
     private IEnumerator RunLights(int col, int row, int dir)
     {
-        var elapsed = 0f;
         var icons = new[] { col, row + 12, dir + 24 };
         icons.Shuffle();
 
@@ -122,18 +121,17 @@ public class XRayModule : MonoBehaviour
             switch (mode)
             {
                 case 0: // top to bottom
-                    curScanline = Mathf.FloorToInt((elapsed % (3 * _secondsPerIcon)) * (_iconHeight / _secondsPerIcon));
+                    curScanline = Mathf.FloorToInt((Time.time % (3 * _secondsPerIcon)) * (_iconHeight / _secondsPerIcon));
                     break;
 
                 case 1: // bottom to top
-                    curScanline = Mathf.FloorToInt((3 * _secondsPerIcon - elapsed % (3 * _secondsPerIcon)) * (_iconHeight / _secondsPerIcon));
+                    curScanline = Mathf.FloorToInt((3 * _secondsPerIcon - Time.time % (3 * _secondsPerIcon)) * (_iconHeight / _secondsPerIcon));
                     break;
 
                 default:    // alternating
-                    var e = elapsed % (6 * _secondsPerIcon);
-                    var reverse = e > 3 * _secondsPerIcon;
-                    curScanline = reverse
-                        ? Mathf.FloorToInt((6 * _secondsPerIcon - elapsed % (3 * _secondsPerIcon)) * (_iconHeight / _secondsPerIcon))
+                    var e = Time.time % (6 * _secondsPerIcon);
+                    curScanline = e > 3 * _secondsPerIcon
+                        ? Mathf.FloorToInt((6 * _secondsPerIcon - e) * (_iconHeight / _secondsPerIcon))
                         : Mathf.FloorToInt(e * (_iconHeight / _secondsPerIcon));
                     break;
             }
@@ -168,7 +166,6 @@ public class XRayModule : MonoBehaviour
 
             prevScanline = curScanline;
             yield return null;
-            elapsed += Time.deltaTime;
         }
     }
 
