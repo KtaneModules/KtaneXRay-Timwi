@@ -45,7 +45,11 @@ public class XRayModule : MonoBehaviour
         var dir = Enumerable.Range(0, 9).Where(dr => !(col == 0 && dr % 3 == 0) && !(col == 11 && dr % 3 == 2) && !(row == 0 && dr / 3 == 0) && !(row == 11 && dr / 3 == 2)).PickRandom();
         var solutionIcon = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
         var decoyIcon = _table[(row + dir / 3 - 1) * 12 + (col ^ 1) + (dir % 3 - 1)];
-        var buttonLabelIxs = Enumerable.Range(0, 33).Where(i => i != solutionIcon && i != decoyIcon).ToList().Shuffle().Take(Buttons.Length - 2).Concat(new[] { solutionIcon, decoyIcon }).ToList().Shuffle();
+        var buttonLabelIxs = Enumerable.Range(0, 33).Where(i => i != solutionIcon && i != decoyIcon).ToList().Shuffle();
+        if (solutionIcon == decoyIcon)
+            buttonLabelIxs = buttonLabelIxs.Take(Buttons.Length - 1).Concat(new[] { solutionIcon }).ToList().Shuffle();
+        else
+            buttonLabelIxs = buttonLabelIxs.Take(Buttons.Length - 2).Concat(new[] { solutionIcon, decoyIcon }).ToList().Shuffle();
         var solutionIx = buttonLabelIxs.IndexOf(solutionIcon);
         for (int i = 0; i < Buttons.Length; i++)
         {
