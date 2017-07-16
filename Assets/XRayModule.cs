@@ -60,7 +60,7 @@ public class XRayModule : MonoBehaviour
         }
 
         Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: symbol there is {3}.", _moduleId, col + 1, row + 1, _table[row * 12 + col]);
-        Debug.LogFormat("[X-Ray #{0}] {1}. Solution symbol is {2}.", _moduleId, "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], solutionIcon);
+        Debug.LogFormat("[X-Ray #{0}] {1} = {2}. Solution symbol is {3}.", _moduleId, dir + 1, "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], solutionIcon);
         Debug.LogFormat("[X-Ray #{0}] Correct symbol is on button #{1}.", _moduleId, solutionIx + 1);
 
         if (_coroutine != null)
@@ -130,11 +130,7 @@ public class XRayModule : MonoBehaviour
                     break;
             }
 
-            if (curScanline >= 3 * _iconHeight)
-            {
-                Debug.LogFormat("Error: curScanline = {0} ( ≥ {1})", curScanline, 3 * _iconHeight);
-            }
-            else if (curScanline != prevScanline)
+            if (curScanline < 3 * _iconHeight && curScanline != prevScanline)
             {
                 var icon = RawBits.Icons[icons[curScanline / _iconHeight]];
                 var scanlineStart = (curScanline % _iconHeight) * _ulongsPerScanline;
