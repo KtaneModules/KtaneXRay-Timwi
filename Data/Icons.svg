@@ -27,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.1641667"
-     inkscape:cx="600"
-     inkscape:cy="150"
+     inkscape:zoom="8.0563032"
+     inkscape:cx="934.41054"
+     inkscape:cy="142.91266"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -268,14 +268,6 @@
        transform="translate(0,752.36218)"
        id="path3826" />
     <path
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:10;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="M 920,862.36218 920,942.36218 940,942.36218 940,916.26843 943.5625,912.39343 965.375,942.36218 990.09375,942.36218 957.40625,897.42468 989.75,862.36218 962.5625,862.36218 940,886.79968 940,862.36218 920,862.36218 z"
-       id="rect3845"
-       inkscape:export-filename="D:\temp\temp.png"
-       inkscape:export-xdpi="162"
-       inkscape:export-ydpi="162"
-       inkscape:connector-curvature="0" />
-    <path
        inkscape:export-filename="D:\temp\temp.png"
        inkscape:export-xdpi="162"
        inkscape:export-ydpi="162"
@@ -283,5 +275,10 @@
        d="M 1050 110 C 1027.9086 110 1010 123.43146 1010 140 C 1010 156.56854 1027.9086 170 1050 170 C 1053.3524 170 1056.607 169.67637 1059.7188 169.09375 C 1058.6691 177.51338 1054.449 184.81063 1048.375 189.5 C 1062.2871 187.1553 1073.1121 176.63471 1074.7812 163.53125 C 1084.0443 158.03677 1090 149.54515 1090 140 C 1090 123.43146 1072.0914 110 1050 110 z "
        transform="translate(0,752.36218)"
        id="path3879" />
+    <path
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="M 912.5,862.36218 912.5,867.36218 912.5,942.36218 932.5,942.36218 932.5,894.64343 967.5,942.36218 987.5,942.36218 987.5,862.36218 967.5,862.36218 967.5,910.08093 932.5,862.36218 912.5,862.36218 z"
+       id="path3026"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>
