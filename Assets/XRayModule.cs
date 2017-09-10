@@ -46,25 +46,18 @@ public class XRayModule : MonoBehaviour
         // This makes sure that we don’t go off the edge of the table
         var dir = Enumerable.Range(0, 9).Where(dr => !(col == 0 && dr % 3 == 0) && !(col == 11 && dr % 3 == 2) && !(row == 0 && dr / 3 == 0) && !(row == 11 && dr / 3 == 2)).PickRandom();
         var solutionIcon = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
-        var decoyIcon = _table[(row + dir / 3 - 1) * 12 + (col ^ 1) + (dir % 3 - 1)];
+        var decoyIcon = (col == 1 && dir % 3 == 0) || (col == 10 && dir % 3 == 2) ? solutionIcon : _table[(row + dir / 3 - 1) * 12 + (col ^ 1) + (dir % 3 - 1)];
         var buttonLabelIxs = Enumerable.Range(0, 33).Where(i => i != solutionIcon && i != decoyIcon).ToList().Shuffle();
-
-        Debug.LogFormat("<X-Ray #{0}> solutionIcon={1}, decoyIcon={2}", _moduleId, solutionIcon, decoyIcon);
-        Debug.LogFormat("<X-Ray #{0}> 1: buttonLabelIxs=[{1}]", _moduleId, buttonLabelIxs.JoinString(", "));
 
         if (solutionIcon == decoyIcon)
             buttonLabelIxs = buttonLabelIxs.Take(Buttons.Length - 1).Concat(new[] { solutionIcon }).ToList().Shuffle();
         else
             buttonLabelIxs = buttonLabelIxs.Take(Buttons.Length - 2).Concat(new[] { solutionIcon, decoyIcon }).ToList().Shuffle();
 
-        Debug.LogFormat("<X-Ray #{0}> 2: buttonLabelIxs=[{1}]", _moduleId, buttonLabelIxs.JoinString(", "));
-
         var solutionIx = buttonLabelIxs.IndexOf(solutionIcon);
-        Debug.LogFormat("<X-Ray #{0}> solutionIx={1}", _moduleId, solutionIx);
 
         for (int i = 0; i < Buttons.Length; i++)
         {
-            Debug.LogFormat("<X-Ray #{0}> for i={1}: buttonLabelIxs[i]={2}", _moduleId, i, buttonLabelIxs[i]);
             ButtonLabelObjs[i].material.mainTexture = ButtonLabels[buttonLabelIxs[i]];
             setButtonHandler(i, solutionIx);
         }
