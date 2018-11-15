@@ -25,7 +25,7 @@ public class XRayModule : MonoBehaviour
     private const int _iconWidth = 180;
     private const int _iconHeight = 180;
 
-    private static int[] _table = { 30, 28, 26, 1, 25, 11, 8, 29, 9, 12, 3, 11, 15, 13, 28, 19, 14, 31, 0, 15, 13, 31, 18, 9, 8, 11, 2, 9, 23, 22, 17, 14, 0, 23, 32, 20, 30, 27, 25, 4, 26, 16, 9, 24, 23, 6, 4, 28, 12, 15, 21, 10, 21, 22, 29, 17, 26, 27, 22, 32, 0, 7, 15, 17, 14, 23, 2, 11, 27, 27, 23, 18, 13, 25, 9, 11, 19, 19, 4, 14, 16, 32, 5, 12, 3, 10, 0, 5, 32, 25, 30, 28, 3, 19, 6, 22, 18, 10, 24, 20, 6, 13, 16, 16, 7, 5, 30, 18, 29, 31, 1, 31, 21, 3, 1, 17, 20, 20, 5, 32, 17, 2, 1, 29, 7, 15, 16, 19, 24, 4, 7, 22, 26, 5, 4, 27, 6, 12, 14, 6, 10, 31, 18, 21 };
+    private static readonly int[] _table = { 30, 28, 26, 1, 25, 11, 8, 29, 9, 12, 3, 11, 15, 13, 28, 19, 14, 31, 0, 15, 13, 31, 18, 9, 8, 11, 2, 9, 23, 22, 17, 14, 0, 23, 32, 20, 30, 27, 25, 4, 26, 16, 9, 24, 23, 6, 4, 28, 12, 15, 21, 10, 21, 22, 29, 17, 26, 27, 22, 32, 0, 7, 15, 17, 14, 23, 2, 11, 27, 27, 23, 18, 13, 25, 9, 11, 19, 19, 4, 14, 16, 32, 5, 12, 3, 10, 0, 5, 32, 25, 30, 28, 3, 19, 6, 22, 18, 10, 24, 20, 6, 13, 16, 16, 7, 5, 30, 18, 29, 31, 1, 31, 21, 3, 1, 17, 20, 20, 5, 32, 17, 2, 1, 29, 7, 15, 16, 19, 24, 4, 7, 22, 26, 5, 4, 27, 6, 12, 14, 6, 10, 31, 18, 21 };
 
     private static int _moduleIdCounter = 1;
     private int _moduleId;
@@ -43,16 +43,16 @@ public class XRayModule : MonoBehaviour
     {
         var col = Rnd.Range(0, 12);
         var row = Rnd.Range(0, 12);
+
         // This makes sure that we don’t go off the edge of the table
         var dir = Enumerable.Range(0, 9).Where(dr => !(col == 0 && dr % 3 == 0) && !(col == 11 && dr % 3 == 2) && !(row == 0 && dr / 3 == 0) && !(row == 11 && dr / 3 == 2)).PickRandom();
         var solutionIcon = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
         var decoyIcon = (col == 1 && dir % 3 == 0) || (col == 10 && dir % 3 == 2) ? solutionIcon : _table[(row + dir / 3 - 1) * 12 + (col ^ 1) + (dir % 3 - 1)];
         var buttonLabelIxs = Enumerable.Range(0, 33).Where(i => i != solutionIcon && i != decoyIcon).ToList().Shuffle();
 
-        if (solutionIcon == decoyIcon)
-            buttonLabelIxs = buttonLabelIxs.Take(Buttons.Length - 1).Concat(new[] { solutionIcon }).ToList().Shuffle();
-        else
-            buttonLabelIxs = buttonLabelIxs.Take(Buttons.Length - 2).Concat(new[] { solutionIcon, decoyIcon }).ToList().Shuffle();
+        buttonLabelIxs = solutionIcon == decoyIcon
+            ? buttonLabelIxs.Take(Buttons.Length - 1).Concat(new[] { solutionIcon }).ToList().Shuffle()
+            : buttonLabelIxs.Take(Buttons.Length - 2).Concat(new[] { solutionIcon, decoyIcon }).ToList().Shuffle();
 
         var solutionIx = buttonLabelIxs.IndexOf(solutionIcon);
 
@@ -60,6 +60,7 @@ public class XRayModule : MonoBehaviour
         {
             ButtonLabelObjs[i].material.mainTexture = ButtonLabels[buttonLabelIxs[i]];
             setButtonHandler(i, solutionIx);
+            Debug.LogFormat("[X-Ray #{0}] Button #{1} has symbol {2}.", _moduleId, i + 1, buttonLabelIxs[i]);
         }
 
         Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: symbol there is {3}.", _moduleId, col + 1, row + 1, _table[row * 12 + col]);
@@ -90,6 +91,7 @@ public class XRayModule : MonoBehaviour
             {
                 Debug.LogFormat("[X-Ray #{0}] You pressed button #{1}. Module solved.", _moduleId, i + 1);
                 Module.HandlePass();
+                Audio.PlaySoundAtTransform("X-RaySolve", transform);
                 _isSolved = true;
                 StopCoroutine(_coroutine);
                 foreach (var scanLight in ScanLights)
@@ -162,7 +164,10 @@ public class XRayModule : MonoBehaviour
         }
     }
 
-    public string TwitchHelpMessage = "Press a button with !{0} press 3 or !{0} press bl. Buttons are TL, T, BL, B, BR.";
+#pragma warning disable 414
+    private string TwitchHelpMessage = "Press a button with !{0} press 3 or !{0} press bl. Buttons are TL, T, BL, B, BR.";
+#pragma warning restore 414
+
     private static Dictionary<string, int> _twitchButtonMap = new Dictionary<string, int>
     {
         { "tl", 1 }, { "t", 2 }, { "tm", 2 }, { "tc", 2 }, { "tr", 2 }, { "bl", 3 }, { "b", 4 }, { "bm", 4 }, { "bc", 4 }, { "br", 5 }
