@@ -165,7 +165,7 @@ public class XRayModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private string TwitchHelpMessage = "Press a button with !{0} press 3 or !{0} press bl. Buttons are TL, T, BL, B, BR.";
+    private readonly string TwitchHelpMessage = "!{0} press 3 [reading order] | !{0} press BL [buttons are TL, T, BL, B, BR]";
 #pragma warning restore 414
 
     private static Dictionary<string, int> _twitchButtonMap = new Dictionary<string, int>
