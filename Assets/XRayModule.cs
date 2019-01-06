@@ -50,6 +50,8 @@ public class XRayModule : MonoBehaviour
         _isSolved = false;
 
         var rnd = RuleSeedable.GetRNG();
+        Debug.LogFormat("[X-Ray #{0}] Using rule seed: {1}", _moduleId, rnd.Seed);
+
         if (rnd.Seed == 1)
         {
             _table = _seed1Table.Select(convertForSeed1).ToArray();
