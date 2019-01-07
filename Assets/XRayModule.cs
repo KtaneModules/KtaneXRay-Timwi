@@ -26,14 +26,13 @@ public class XRayModule : MonoBehaviour
     private const int _iconWidth = 180;
     private const int _iconHeight = 180;
 
-    private static readonly int[] _seed1Table = { 30, 28, 26, 1, 25, 11, 8, 29, 9, 12, 3, 11, 15, 13, 28, 19, 14, 31, 0, 15, 13, 31, 18, 9, 8, 11, 2, 9, 23, 22, 17, 14, 0, 23, 32, 20, 30, 27, 25, 4, 26, 16, 9, 24, 23, 6, 4, 28, 12, 15, 21, 10, 21, 22, 29, 17, 26, 27, 22, 32, 0, 7, 15, 17, 14, 23, 2, 11, 27, 27, 23, 18, 13, 25, 9, 11, 19, 19, 4, 14, 16, 32, 5, 12, 3, 10, 0, 5, 32, 25, 30, 28, 3, 19, 6, 22, 18, 10, 24, 20, 6, 13, 16, 16, 7, 5, 30, 18, 29, 31, 1, 31, 21, 3, 1, 17, 20, 20, 5, 32, 17, 2, 1, 29, 7, 15, 16, 19, 24, 4, 7, 22, 26, 5, 4, 27, 6, 12, 14, 6, 10, 31, 18, 21 };
     private static readonly string[] _seed1Converter = "a1n,a1f,b1n,b1f,c1n,c1f,d1n,d1f,e1n,e1f,h2f,h2n,d7n,j1n,h6n,g1n,a6n,a2n,k2n,h1n,a7n,e2n,d6n,b3n,a10n,b10n,c10n,d10n,e10n,f10n,i10n,h9n,i9n".Split(',');
 
     private static int _moduleIdCounter = 1;
     private int _moduleId;
     private bool _isSolved;
     private Coroutine _coroutine;
-    private SymbolInfo[] _table;
+    private int[] _table;
     private SymbolInfo[] _columns;
     private SymbolInfo[] _rows;
     private SymbolInfo[] _3x3;
@@ -54,7 +53,6 @@ public class XRayModule : MonoBehaviour
 
         if (rnd.Seed == 1)
         {
-            _table = _seed1Table.Select(convertForSeed1).ToArray();
             _columns = Enumerable.Range(0, 12).Select(convertForSeed1).ToArray();
             _rows = Enumerable.Range(0, 12).Select(i => convertForSeed1(i + 12)).ToArray();
             _3x3 = Enumerable.Range(0, 9).Select(i => convertForSeed1(i + 24)).ToArray();
@@ -76,10 +74,23 @@ public class XRayModule : MonoBehaviour
                 _columns[2 * i] = new SymbolInfo(columnsRaw[i], f == 0);
                 _columns[2 * i + 1] = new SymbolInfo(columnsRaw[i], f != 0);
             }
+        }
 
-            var all = _3x3.Concat(_rows).Concat(_columns).ToArray();
-            var ixs = rnd.ShuffleFisherYates(Enumerable.Range(0, 5).SelectMany(_ => Enumerable.Range(0, 33)).ToArray());
-            _table = ixs.Take(144).Select(ix => all[ix]).ToArray();
+        // Generate the 12×12 grid of numbers 1–5 (still part of rule seed)
+        _table = new int[144];
+        var nmbrs = new List<int>();
+        for (var i = 0; i < 144; i++)
+        {
+            nmbrs.Clear();
+            var x = i % 12;
+            var y = (i / 12) | 0;
+            for (var j = 0; j < 5; j++)
+                if ((x == 0 || j != _table[i - 1]) &&
+                    (y == 0 || j != _table[i - 12]) &&
+                    (x == 0 || y == 0 || j != _table[i - 13]))
+                    nmbrs.Add(j);
+            var n = nmbrs[rnd.Next(0, nmbrs.Count)];
+            _table[i] = n;
         }
 
         Initialize();
@@ -92,29 +103,13 @@ public class XRayModule : MonoBehaviour
 
         // This makes sure that we don’t go off the edge of the table
         var dir = Enumerable.Range(0, 9).Where(dr => !(col == 0 && dr % 3 == 0) && !(col == 11 && dr % 3 == 2) && !(row == 0 && dr / 3 == 0) && !(row == 11 && dr / 3 == 2)).PickRandom();
-        var solutionIcon = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
-        var decoyIcon = (col == 1 && dir % 3 == 0) || (col == 10 && dir % 3 == 2) ? solutionIcon : _table[(row + dir / 3 - 1) * 12 + (col ^ 1) + (dir % 3 - 1)];
-        var buttonLabelIxs = _3x3.Concat(_rows).Concat(_columns).Where(i => i != solutionIcon && i != decoyIcon).ToList().Shuffle();
-
-        Debug.LogFormat(@"<X-Ray #{0}> {1}", _moduleId, buttonLabelIxs.Select(x => x.Index).JoinString(", "));
-
-        buttonLabelIxs = solutionIcon == decoyIcon
-            ? buttonLabelIxs.Take(Buttons.Length - 1).Concat(new[] { solutionIcon }).ToList().Shuffle()
-            : buttonLabelIxs.Take(Buttons.Length - 2).Concat(new[] { solutionIcon, decoyIcon }).ToList().Shuffle();
-
-        var solutionIx = buttonLabelIxs.IndexOf(solutionIcon);
+        var solution = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
 
         for (int i = 0; i < Buttons.Length; i++)
-        {
-            ButtonLabelObjs[i].material.mainTexture = ButtonLabels[buttonLabelIxs[i].Index];
-            ButtonLabelObjs[i].transform.localScale = new Vector3(.25f, buttonLabelIxs[i].Flipped ? -.25f : .25f, .25f);
-            setButtonHandler(i, solutionIx);
-            Debug.LogFormat("[X-Ray #{0}] Button #{1} has symbol {2}.", _moduleId, i + 1, buttonLabelIxs[i]);
-        }
+            setButtonHandler(i, solution);
 
-        Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: symbol there is {3}.", _moduleId, _columns[col], _rows[row], _table[row * 12 + col]);
-        Debug.LogFormat("[X-Ray #{0}] {1} = {2}. Solution symbol is {3}.", _moduleId, _3x3[dir], "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], solutionIcon);
-        Debug.LogFormat("[X-Ray #{0}] Correct symbol is on button #{1}.", _moduleId, solutionIx + 1);
+        Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: number there is {3}.", _moduleId, _columns[col], _rows[row], _table[row * 12 + col] + 1);
+        Debug.LogFormat("[X-Ray #{0}] {1} = {2}. Solution is {3}.", _moduleId, _3x3[dir], "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], solution + 1);
 
         if (_coroutine != null)
             StopCoroutine(_coroutine);
@@ -132,13 +127,13 @@ public class XRayModule : MonoBehaviour
                 return false;
             if (i != solution)
             {
-                Debug.LogFormat("[X-Ray #{0}] You pressed button #{1}, which is wrong. Resetting module.", _moduleId, i + 1);
+                Debug.LogFormat("[X-Ray #{0}] You pressed {1}, which is wrong. Resetting module.", _moduleId, i + 1);
                 Module.HandleStrike();
                 Initialize();
             }
             else
             {
-                Debug.LogFormat("[X-Ray #{0}] You pressed button #{1}. Module solved.", _moduleId, i + 1);
+                Debug.LogFormat("[X-Ray #{0}] You pressed {1}. Module solved.", _moduleId, i + 1);
                 Module.HandlePass();
                 Audio.PlaySoundAtTransform("X-RaySolve", transform);
                 _isSolved = true;
