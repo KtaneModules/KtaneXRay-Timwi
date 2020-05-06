@@ -33,6 +33,7 @@ public class XRayModule : MonoBehaviour
     private bool _isSolved;
     private Coroutine _coroutine;
     private int[] _table;
+    private int _solution;
     private SymbolInfo[] _columns;
     private SymbolInfo[] _rows;
     private SymbolInfo[] _3x3;
@@ -103,20 +104,20 @@ public class XRayModule : MonoBehaviour
 
         // This makes sure that we don’t go off the edge of the table
         var dir = Enumerable.Range(0, 9).Where(dr => !(col == 0 && dr % 3 == 0) && !(col == 11 && dr % 3 == 2) && !(row == 0 && dr / 3 == 0) && !(row == 11 && dr / 3 == 2)).PickRandom();
-        var solution = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
+        _solution = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
 
         for (int i = 0; i < Buttons.Length; i++)
-            setButtonHandler(i, solution);
+            setButtonHandler(i);
 
         Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: number there is {3}.", _moduleId, _columns[col], _rows[row], _table[row * 12 + col] + 1);
-        Debug.LogFormat("[X-Ray #{0}] {1} = {2}. Solution is {3}.", _moduleId, _3x3[dir], "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], solution + 1);
+        Debug.LogFormat("[X-Ray #{0}] {1} = {2}. Solution is {3}.", _moduleId, _3x3[dir], "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], _solution + 1);
 
         if (_coroutine != null)
             StopCoroutine(_coroutine);
         _coroutine = StartCoroutine(RunLights(col, row, dir));
     }
 
-    private void setButtonHandler(int i, int solution)
+    private void setButtonHandler(int i)
     {
         Buttons[i].OnInteract = delegate
         {
@@ -125,7 +126,7 @@ public class XRayModule : MonoBehaviour
 
             if (_isSolved)
                 return false;
-            if (i != solution)
+            if (i != _solution)
             {
                 Debug.LogFormat("[X-Ray #{0}] You pressed {1}, which is wrong. Resetting module.", _moduleId, i + 1);
                 Module.HandleStrike();
@@ -227,5 +228,11 @@ public class XRayModule : MonoBehaviour
         if ((int.TryParse(buttonInput, out buttonId) || _twitchButtonMap.TryGetValue(buttonInput, out buttonId)) && buttonId > 0 && buttonId <= Buttons.Length)
             return new[] { Buttons[buttonId - 1] };
         return null;
+    }
+
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        Buttons[_solution].OnInteract();
+        yield return new WaitForSeconds(.1f);
     }
 }
