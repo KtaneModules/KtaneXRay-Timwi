@@ -12,16 +12,13 @@ MonoBehaviour:
   m_Name: ModConfig
   m_EditorClassIdentifier: 
   id: XRay
-  title: X-Ray
-  description: 'I can see right through you.
-
-
-    Module created by Timwi.
-
-
-    [url=http://ktane.timwi.de/PDF/X-Ray.pdf]Manual PDF[/url]
-
-    [url=http://ktane.timwi.de/HTML/X-Ray.html]Manual HTML[/url]'
-  version: 1.0
+  title: X-Ray and Not X-Ray
+  author: Timwi
+  description: "I can see right through you.\r\nYou can\u2019t hear left around me.\r\n\r\nModules
+    created by Timwi.\r\n\r\n[url=http://ktane.timwi.de/PDF/X-Ray.pdf]X-Ray Manual
+    PDF[/url]\r\n[url=http://ktane.timwi.de/HTML/X-Ray.html]X-Ray Manual HTML[/url]\r\n\r\n[url=http://ktane.timwi.de/PDF/Not%20X-Ray.pdf]Not
+    X-Ray Manual PDF[/url]\r\n[url=http://ktane.timwi.de/HTML/Not%20X-Ray.html]Not
+    X-Ray Manual HTML[/url]"
+  version: 2.0
   outputFolder: build
   previewImage: {fileID: 2800000, guid: bd5c1f4881f57d54481b44e4c8a7779a, type: 3}
