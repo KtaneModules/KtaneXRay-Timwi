@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,14 +13,12 @@ using Rnd = UnityEngine.Random;
 public class XRayModule : XRayModuleBase
 {
     private static readonly string[] _seed1Converter = "a1n,a1f,b1n,b1f,c1n,c1f,d1n,d1f,e1n,e1f,h2f,h2n,d7n,j1n,h6n,g1n,a6n,a2n,k2n,h1n,a7n,e2n,d6n,b3n,a10n,b10n,c10n,d10n,e10n,f10n,i10n,h9n,i9n".Split(',');
+    private static readonly Dictionary<int, XRayRules> _ruleSeededRules = new Dictionary<int, XRayRules>();
 
     private static int _moduleIdCounter = 1;
     private int _moduleId;
-    private int[] _table;
     private int _solution;
-    private SymbolInfo[] _columns;
-    private SymbolInfo[] _rows;
-    private SymbolInfo[] _3x3;
+    private XRayRules _rules;
 
     static SymbolInfo convertForSeed1(int icon)
     {
@@ -36,33 +33,48 @@ public class XRayModule : XRayModuleBase
         var rnd = RuleSeedable.GetRNG();
         Debug.LogFormat("[X-Ray #{0}] Using rule seed: {1}", _moduleId, rnd.Seed);
 
-        if (rnd.Seed == 1)
-        {
-            _columns = Enumerable.Range(0, 12).Select(convertForSeed1).ToArray();
-            _rows = Enumerable.Range(0, 12).Select(i => convertForSeed1(i + 12)).ToArray();
-            _3x3 = Enumerable.Range(0, 9).Select(i => convertForSeed1(i + 24)).ToArray();
-        }
+        if (_ruleSeededRules.ContainsKey(rnd.Seed))
+            _rules = _ruleSeededRules[rnd.Seed];
         else
         {
-            // Decide on the icons for the 3×3 table up top
-            _3x3 = rnd.ShuffleFisherYates(Enumerable.Range(0, 22).ToArray()).Take(9).Select(x => new SymbolInfo(x + 88, false)).ToArray();
-
-            // For the rows, we can use any non-symmetric icon
-            _rows = rnd.ShuffleFisherYates(Enumerable.Range(0, 88).ToArray()).Take(12).Select(x => new SymbolInfo(x, x < 55 ? rnd.Next(0, 2) != 0 : false)).ToArray();
-
-            // For the columns, we can only use flippable icons that we haven’t already used for rows
-            var columnsRaw = rnd.ShuffleFisherYates(Enumerable.Range(0, 55).Where(x => !_rows.Any(r => r.Index == x)).ToArray());
-            _columns = new SymbolInfo[12];
-            for (var i = 0; i < 6; i++)
+            if (rnd.Seed == 1)
             {
-                var f = rnd.Next(0, 2);
-                _columns[2 * i] = new SymbolInfo(columnsRaw[i], f == 0);
-                _columns[2 * i + 1] = new SymbolInfo(columnsRaw[i], f != 0);
+                _rules = new XRayRules(
+                    columns: Enumerable.Range(0, 12).Select(convertForSeed1).ToArray(),
+                    rows: Enumerable.Range(0, 12).Select(i => convertForSeed1(i + 12)).ToArray(),
+                    t3x3: Enumerable.Range(0, 9).Select(i => convertForSeed1(i + 24)).ToArray(),
+                    numbersInTable: GenerateTableOfNumbers(rnd));
             }
+            else
+            {
+                // Decide on the icons for the 3×3 table up top
+                var _3x3 = rnd.ShuffleFisherYates(Enumerable.Range(0, 22).ToArray()).Take(9).Select(x => new SymbolInfo(x + 88, false)).ToArray();
+
+                // For the rows, we can use any non-symmetric icon
+                var _rows = rnd.ShuffleFisherYates(Enumerable.Range(0, 88).ToArray()).Take(12).Select(x => new SymbolInfo(x, x < 55 ? rnd.Next(0, 2) != 0 : false)).ToArray();
+
+                // For the columns, we can only use flippable icons that we haven’t already used for rows
+                var columnsRaw = rnd.ShuffleFisherYates(Enumerable.Range(0, 55).Where(x => !_rows.Any(r => r.Index == x)).ToArray());
+                var _columns = new SymbolInfo[12];
+                for (var i = 0; i < 6; i++)
+                {
+                    var f = rnd.Next(0, 2);
+                    _columns[2 * i] = new SymbolInfo(columnsRaw[i], f == 0);
+                    _columns[2 * i + 1] = new SymbolInfo(columnsRaw[i], f != 0);
+                }
+
+                _rules = new XRayRules(_columns, _rows, _3x3, GenerateTableOfNumbers(rnd));
+            }
+            _ruleSeededRules[rnd.Seed] = _rules;
         }
 
+        Initialize();
+    }
+
+    private static int[] GenerateTableOfNumbers(MonoRandom rnd)
+    {
         // Generate the 12×12 grid of numbers 1–5 (still part of rule seed)
-        _table = new int[144];
+        var _table = new int[144];
         var nmbrs = new List<int>();
         for (var i = 0; i < 144; i++)
         {
@@ -77,8 +89,7 @@ public class XRayModule : XRayModuleBase
             var n = nmbrs[rnd.Next(0, nmbrs.Count)];
             _table[i] = n;
         }
-
-        Initialize();
+        return _table;
     }
 
     private void Initialize()
@@ -88,12 +99,12 @@ public class XRayModule : XRayModuleBase
 
         // This makes sure that we don’t go off the edge of the table
         var dir = Enumerable.Range(0, 9).Where(dr => !(col == 0 && dr % 3 == 0) && !(col == 11 && dr % 3 == 2) && !(row == 0 && dr / 3 == 0) && !(row == 11 && dr / 3 == 2)).PickRandom();
-        _solution = _table[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
+        _solution = _rules.NumbersInTable[(row + dir / 3 - 1) * 12 + col + (dir % 3 - 1)];
 
-        Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: number there is {3}.", _moduleId, _columns[col], _rows[row], _table[row * 12 + col] + 1);
-        Debug.LogFormat("[X-Ray #{0}] {1} = {2}. Solution is {3}.", _moduleId, _3x3[dir], "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], _solution + 1);
+        Debug.LogFormat("[X-Ray #{0}] Column {1}, Row {2}: number there is {3}.", _moduleId, _rules.Columns[col], _rules.Rows[row], _rules.NumbersInTable[row * 12 + col] + 1);
+        Debug.LogFormat("[X-Ray #{0}] {1} = {2}. Solution is {3}.", _moduleId, _rules.Table3x3[dir], "Move up-left,Move up,Move up-right,Move left,Stay put,Move right,Move down-left,Move down,Move down-right".Split(',')[dir], _solution + 1);
 
-        var icons = new[] { _columns[col], _rows[row], _3x3[dir] };
+        var icons = new[] { _rules.Columns[col], _rules.Rows[row], _rules.Table3x3[dir] };
         icons.Shuffle();
         var mode = (ScanningMode) Rnd.Range(0, 3);
         Debug.LogFormat("[X-Ray #{0}] Scanning {1}.", _moduleId,

@@ -12,16 +12,6 @@ MonoBehaviour:
   m_Name: WorkshopItem
   m_EditorClassIdentifier: 
   WorkshopPublishedFileID: 985466399
-  Title: X-Ray
-  Description: 'I can see right through you.
-
-
-    Module created by Timwi.
-
-
-    [url=http://ktane.timwi.de/PDF/X-Ray.pdf]Manual PDF[/url]
-
-    [url=http://ktane.timwi.de/HTML/X-Ray.html]Manual HTML[/url]'
-  PreviewImage: {fileID: 2800000, guid: bd5c1f4881f57d54481b44e4c8a7779a, type: 3}
+  Title: X-Ray and Not X-Ray
   Tags:
   - Regular Module

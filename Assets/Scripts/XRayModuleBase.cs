@@ -50,10 +50,10 @@ public abstract class XRayModuleBase : MonoBehaviour
         };
     }
 
-    protected void StartLights(SymbolInfo[] icons, ScanningMode mode, ScannerColor color)
+    protected void StartLights(SymbolInfo[] icons, ScanningMode mode, ScannerColor color, float delayBetweenRepeats = 0)
     {
         StopLights();
-        _coroutine = StartCoroutine(RunLights(icons, mode, color));
+        _coroutine = StartCoroutine(RunLights(icons, mode, color, delayBetweenRepeats));
     }
 
     protected void StopLights()
@@ -65,7 +65,7 @@ public abstract class XRayModuleBase : MonoBehaviour
             scanLight.SetActive(false);
     }
 
-    private IEnumerator RunLights(SymbolInfo[] icons, ScanningMode mode, ScannerColor color)
+    private IEnumerator RunLights(SymbolInfo[] icons, ScanningMode mode, ScannerColor color, float delayBetweenRepeats = 0)
     {
         const int _iconWidth = 180;
         const int _iconHeight = 180;
@@ -84,22 +84,22 @@ public abstract class XRayModuleBase : MonoBehaviour
             switch (mode)
             {
                 case ScanningMode.TopToBottom:
-                    curScanline = Mathf.FloorToInt((Time.time % (icons.Length * _secondsPerIcon)) * (_iconHeight / _secondsPerIcon));
+                    curScanline = Mathf.FloorToInt((Time.time % (icons.Length * _secondsPerIcon + delayBetweenRepeats)) * (_iconHeight / _secondsPerIcon));
                     break;
 
                 case ScanningMode.BottomToTop:
-                    curScanline = Mathf.FloorToInt((icons.Length * _secondsPerIcon - Time.time % (icons.Length * _secondsPerIcon)) * (_iconHeight / _secondsPerIcon));
+                    curScanline = Mathf.FloorToInt((icons.Length * _secondsPerIcon - Time.time % (icons.Length * _secondsPerIcon + delayBetweenRepeats)) * (_iconHeight / _secondsPerIcon));
                     break;
 
                 default:    // alternating
-                    var e = Time.time % (2 * icons.Length * _secondsPerIcon);
+                    var e = Time.time % (2 * icons.Length * _secondsPerIcon + 2 * delayBetweenRepeats);
                     curScanline = e > icons.Length * _secondsPerIcon
-                        ? Mathf.FloorToInt((2 * icons.Length * _secondsPerIcon - e) * (_iconHeight / _secondsPerIcon))
-                        : Mathf.FloorToInt(e * (_iconHeight / _secondsPerIcon));
+                        ? Mathf.FloorToInt((2 * icons.Length * _secondsPerIcon - e - delayBetweenRepeats) * (_iconHeight / _secondsPerIcon))
+                        : Mathf.FloorToInt((e - delayBetweenRepeats) * (_iconHeight / _secondsPerIcon));
                     break;
             }
 
-            if (curScanline < icons.Length * _iconHeight && curScanline != prevScanline)
+            if (curScanline < icons.Length * _iconHeight && curScanline > 0 && curScanline != prevScanline)
             {
                 var icon = RawBits.Icons[icons[curScanline / _iconHeight].Index];
                 var scanlineStart = (icons[curScanline / _iconHeight].Flipped ? _iconHeight - 1 - (curScanline % _iconHeight) : curScanline % _iconHeight) * _ulongsPerScanline;
