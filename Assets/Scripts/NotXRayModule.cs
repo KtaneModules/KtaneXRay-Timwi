@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using XRay;
 
@@ -276,5 +277,35 @@ public class NotXRayModule : XRayModuleBase
             _isMazeStage = true;
             StartLights(new[] { _rules.Tables[_table][_solutionCell] }, ScanningMode.BottomToTop, _scannerColor, 2f);
         }
+    }
+
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = "!{0} press 34142 [buttons in reading order] | !{0} press TL BL BR [buttons are TL, T, BL, B, BR]";
+#pragma warning restore 414
+
+    public IEnumerable<KMSelectable> ProcessTwitchCommand(string command)
+    {
+        var options = _twitchButtonMap.Keys.Concat(_twitchButtonMap.Values.Select(v => v.ToString())).Join("|");
+        var m = Regex.Match(command, string.Format(@"^\s*(?:press )?((?:{0})*)\s*$", options), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (!m.Success)
+            return null;
+
+        var str = m.Groups[1].Value;
+        var matches = Regex.Matches(str, options, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        var buttons = new List<KMSelectable>();
+        var ix = 0;
+        int buttonId;
+        for (var i = 0; i < matches.Count; i++)
+        {
+            if (matches[i].Index > ix && str.Substring(ix, matches[i].Index - ix).Any(c => !char.IsWhiteSpace(c)))
+                return null;
+            if (!((int.TryParse(matches[i].Value, out buttonId) || _twitchButtonMap.TryGetValue(matches[i].Value, out buttonId)) && buttonId > 0 && buttonId <= Buttons.Length))
+                return null;
+            buttons.Add(Buttons[buttonId - 1]);
+            ix = matches[i].Index + matches[i].Length;
+        }
+        if (str.Length > ix && str.Substring(ix).Any(c => !char.IsWhiteSpace(c)))
+            return null;
+        return buttons;
     }
 }

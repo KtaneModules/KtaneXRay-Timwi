@@ -128,24 +128,8 @@ public abstract class XRayModuleBase : MonoBehaviour
         }
     }
 
-#pragma warning disable 414
-    private readonly string TwitchHelpMessage = "!{0} press 3 [reading order] | !{0} press BL [buttons are TL, T, BL, B, BR]";
-#pragma warning restore 414
-
-    private static readonly Dictionary<string, int> _twitchButtonMap = new Dictionary<string, int>
+    protected static readonly Dictionary<string, int> _twitchButtonMap = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase)
     {
         { "tl", 1 }, { "t", 2 }, { "tm", 2 }, { "tc", 2 }, { "tr", 2 }, { "bl", 3 }, { "b", 4 }, { "bm", 4 }, { "bc", 4 }, { "br", 5 }
     };
-
-    public KMSelectable[] ProcessTwitchCommand(string command)
-    {
-        if (!command.StartsWith("press ", StringComparison.InvariantCultureIgnoreCase) || command.Length < 7)
-            return null;
-        string buttonInput = command.Substring(6).ToLowerInvariant();
-
-        int buttonId;
-        if ((int.TryParse(buttonInput, out buttonId) || _twitchButtonMap.TryGetValue(buttonInput, out buttonId)) && buttonId > 0 && buttonId <= Buttons.Length)
-            return new[] { Buttons[buttonId - 1] };
-        return null;
-    }
 }

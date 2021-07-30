@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using XRay;
 
@@ -133,5 +134,23 @@ public class XRayModule : XRayModuleBase
     {
         Buttons[_solution].OnInteract();
         yield return new WaitForSeconds(.1f);
+    }
+
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = "!{0} press 3 [reading order] | !{0} press BL [buttons are TL, T, BL, B, BR]";
+#pragma warning restore 414
+
+    public KMSelectable[] ProcessTwitchCommand(string command)
+    {
+        var m = Regex.Match(command, string.Format(@"^\s*(?:press )?({0})\s*$", _twitchButtonMap.Keys.Concat(_twitchButtonMap.Values.Select(v => v.ToString())).Join("|")), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (!m.Success)
+            return null;
+
+        var buttonInput = m.Groups[1].Value;
+
+        int buttonId;
+        if ((int.TryParse(buttonInput, out buttonId) || _twitchButtonMap.TryGetValue(buttonInput, out buttonId)) && buttonId > 0 && buttonId <= Buttons.Length)
+            return new[] { Buttons[buttonId - 1] };
+        return null;
     }
 }
