@@ -308,4 +308,83 @@ public class NotXRayModule : XRayModuleBase
             return null;
         return buttons;
     }
+
+    struct QueueItem
+    {
+        public int Cell;
+        public int Parent;
+        public ButtonDirection Direction;
+        public QueueItem(int cell, int parent, ButtonDirection dir)
+        {
+            Cell = cell;
+            Parent = parent;
+            Direction = dir;
+        }
+    }
+
+    public IEnumerator TwitchHandleForcedSolve()
+    {
+        if (!_isMazeStage)
+        {
+            while (_curCell % 7 != 3)
+            {
+                Buttons[Array.IndexOf(_directions, ButtonDirection.Right)].OnInteract();
+                yield return new WaitForSeconds(.1f);
+            }
+            while (_curCell / 7 != 3)
+            {
+                Buttons[Array.IndexOf(_directions, ButtonDirection.Down)].OnInteract();
+                yield return new WaitForSeconds(.1f);
+            }
+            Buttons[4].OnInteract();
+            yield return new WaitForSeconds(.1f);
+        }
+
+        // Find path from current position to position of key #_keysCollected
+        var visited = new Dictionary<int, QueueItem>();
+        var q = new Queue<QueueItem>();
+        q.Enqueue(new QueueItem(_curCell, -1, 0));
+
+        while (q.Count > 0)
+        {
+            var qi = q.Dequeue();
+            if (visited.ContainsKey(qi.Cell))
+                continue;
+            visited[qi.Cell] = qi;
+            if (qi.Cell == _solutionCell)
+                break;
+
+            if (qi.Cell / 7 > 0 && _rules.Mazes[_table].Contains((qi.Cell - 7) << 1))
+                q.Enqueue(new QueueItem(qi.Cell % 7 + 7 * (qi.Cell % 7 == 0 || qi.Cell % 7 == 6 ? (qi.Cell / 7 + 3) % 5 + 1 : (qi.Cell / 7 + 6) % 7), qi.Cell, ButtonDirection.Up));
+
+            if (qi.Cell % 7 < 6 && _rules.Mazes[_table].Contains((qi.Cell << 1) | 1))
+                q.Enqueue(new QueueItem(7 * (qi.Cell / 7) + (qi.Cell / 7 == 0 || qi.Cell / 7 == 6 ? (qi.Cell % 7 + 5) % 5 + 1 : (qi.Cell % 7 + 1) % 7), qi.Cell, ButtonDirection.Right));
+
+            if (qi.Cell / 7 < 6 && _rules.Mazes[_table].Contains(qi.Cell << 1))
+                q.Enqueue(new QueueItem(qi.Cell % 7 + 7 * (qi.Cell % 7 == 0 || qi.Cell % 7 == 6 ? (qi.Cell / 7 + 5) % 5 + 1 : (qi.Cell / 7 + 1) % 7), qi.Cell, ButtonDirection.Down));
+
+            if (qi.Cell % 7 > 0 && _rules.Mazes[_table].Contains(((qi.Cell - 1) << 1) | 1))
+                q.Enqueue(new QueueItem(7 * (qi.Cell / 7) + (qi.Cell / 7 == 0 || qi.Cell / 7 == 6 ? (qi.Cell % 7 + 3) % 5 + 1 : (qi.Cell % 7 + 6) % 7), qi.Cell, ButtonDirection.Left));
+        }
+
+        var r = _solutionCell;
+        var path = new List<ButtonDirection>();
+        while (true)
+        {
+            var nr = visited[r];
+            if (nr.Parent == -1)
+                break;
+            path.Add(nr.Direction);
+            r = nr.Parent;
+        }
+
+        for (int i = path.Count - 1; i >= 0; i--)
+        {
+            Buttons[Array.IndexOf(_directions, path[i])].OnInteract();
+            yield return new WaitForSeconds(.1f);
+        }
+
+        Buttons[4].OnInteract();
+        yield return new WaitForSeconds(.1f);
+    }
 }
