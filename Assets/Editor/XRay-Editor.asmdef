@@ -1,0 +1,10 @@
+{
+  "name": "XRay-Editor",
+  "references": [
+    "XRay"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": []
+}
